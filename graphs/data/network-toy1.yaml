@@ -1,0 +1,245 @@
+# Initial State of the Network
+
+entities:
+
+  # People: P1 to P10, each with initial token balances
+  people:
+    - id: P1
+      balances:
+        T1: 100
+        T2: 100
+        T3: 100
+    - id: P2
+      balances:
+        T1: 100
+        T2: 100
+        T3: 100
+    - id: P3
+      balances:
+        T1: 100
+        T2: 100
+        T3: 100
+    - id: P4
+      balances:
+        T1: 100
+        T2: 100
+        T3: 100
+    - id: P5
+      balances:
+        T1: 100
+        T2: 100
+        T3: 100
+    - id: P6
+      balances:
+        T1: 100
+        T2: 100
+        T3: 100
+    - id: P7
+      balances:
+        T1: 100
+        T2: 100
+        T3: 100
+    - id: P8
+      balances:
+        T1: 100
+        T2: 100
+        T3: 100
+    - id: P9
+      balances:
+        T1: 100
+        T2: 100
+        T3: 100
+    - id: P10
+      balances:
+        T1: 100
+        T2: 100
+        T3: 100
+
+  # Builder Teams: B1, B2, B3 with their deployed apps
+  builder_teams:
+    - id: B1
+      deployed_apps: [A1]
+    - id: B2
+      deployed_apps: [A2]
+    - id: B3
+      deployed_apps: [A3]
+
+  # Apps: A1, A2, A3 with their associated contracts
+  apps:
+    - id: A1
+      name: Uniswap v2
+      deployed_by: B1
+      contracts: [UniV2Factory, UniV2Router, LP1, LP2, LP3]
+    - id: A2
+      name: Clanker
+      deployed_by: B2
+      contracts: [ClankerFactory, ClankerLocker]
+    - id: A3
+      name: BasePaint
+      deployed_by: B3
+      contracts: [BasePaintBrush721, BasePaintCanvas1155]
+
+  # Contracts: Including tokens and app-specific contracts with methods and initial state
+  contracts:
+    # Token Contracts
+    - id: T1
+      type: Token
+      methods: [mint(amount, to), burn(amount), transferFrom(from, to, amount)]
+      state:
+        balances:
+          P1: 100
+          P2: 100
+          P3: 100
+          P4: 100
+          P5: 100
+          P6: 100
+          P7: 100
+          P8: 100
+          P9: 100
+          P10: 100
+    - id: T2
+      type: Token
+      methods: [mint(amount, to), burn(amount), transferFrom(from, to, amount)]
+      state:
+        balances:
+          P1: 100
+          P2: 100
+          P3: 100
+          P4: 100
+          P5: 100
+          P6: 100
+          P7: 100
+          P8: 100
+          P9: 100
+          P10: 100
+    - id: T3
+      type: Token
+      methods: [mint(amount, to), burn(amount), transferFrom(from, to, amount)]
+      state:
+        balances:
+          P1: 100
+          P2: 100
+          P3: 100
+          P4: 100
+          P5: 100
+          P6: 100
+          P7: 100
+          P8: 100
+          P9: 100
+          P10: 100
+
+    # Uniswap v2 Contracts (A1)
+    - id: UniV2Factory
+      type: UniV2Factory
+      methods: [createPair(tokenA, tokenB)]
+      state:
+        pairs: [LP1, LP2, LP3]
+    - id: UniV2Router
+      type: UniV2Router
+      methods: [swapTokenAForTokenB(tokenA, amountA, tokenB, amountB), addLiquidity(tokenA, amountA, tokenB, amountB, to), removeLiquidity(tokenA, amountA, tokenB, amountB, to)]
+    - id: LP1
+      type: UniV2Pair
+      pair: [T1, T2]
+      methods: [swap(amountA, amountB), mint(to), burn(to)]
+      state:
+        reserves: [0, 0]
+    - id: LP2
+      type: UniV2Pair
+      pair: [T1, T3]
+      methods: [swap(amountA, amountB), mint(to), burn(to)]
+      state:
+        reserves: [0, 0]
+    - id: LP3
+      type: UniV2Pair
+      pair: [T2, T3]
+      methods: [swap(amountA, amountB), mint(to), burn(to)]
+      state:
+        reserves: [0, 0]
+
+    # Clanker Contracts (A2)
+    - id: ClankerFactory
+      type: ClankerFactory
+      methods: [deployToken(deployer)]
+    - id: ClankerLocker
+      type: ClankerLocker
+      methods: [collectRewards(token)]
+
+    # BasePaint Contracts (A3)
+    - id: BasePaintBrush721
+      type: BasePaintBrush721
+      methods: [mintBrush()]
+    - id: BasePaintCanvas1155
+      type: BasePaintCanvas1155
+      methods: [paint(pixels), mintCanvas(amount), artistWithdraw(), ownerWithdraw()]
+
+# Blocks: Ordered list of blocks containing transactions
+
+blocks:
+
+  # Block 1: P1 deploys a new token T4 directly (not using ClankerFactory)
+  - id: block1
+    transactions:
+      - id: tx1
+        initiator: P1
+        action:
+          type: deploy
+          contract:
+            id: T4
+            type: Token
+            methods: [mint(amount, to), burn(amount), transferFrom(from, to, amount)]
+            initial_state:
+              balances:
+                P1: 100
+
+  # Block 2: P1 creates LP4 and adds liquidity; P2 adds liquidity
+  - id: block2
+    transactions:
+      - id: tx2
+        initiator: P1
+        calls:
+          - target: UniV2Factory
+            method: createPair
+            args: [T1, T4]
+            effects:
+              - deploy:
+                  id: LP4
+                  type: UniV2Pair
+                  pair: [T1, T4]
+                  methods: [swap(amountA, amountB), mint(to), burn(to)]
+                  state:
+                    reserves: [0, 0]
+          - target: UniV2Router
+            method: addLiquidity
+            args: [T1, 50, T4, 50, P1]
+            effects:
+              - call:
+                  target: T1
+                  method: transferFrom
+                  args: [P1, LP4, 50]
+              - call:
+                  target: T4
+                  method: transferFrom
+                  args: [P1, LP4, 50]
+              - call:
+                  target: LP4
+                  method: mint
+                  args: [P1, amount]
+      - id: tx3
+        initiator: P2
+        calls:
+          - target: UniV2Router
+            method: addLiquidity
+            args: [T1, 50, T4, 50, P2]
+            effects:
+              - call:
+                  target: T1
+                  method: transferFrom
+                  args: [P2, LP4, 50]
+              - call:
+                  target: T4
+                  method: transferFrom
+                  args: [P2, LP4, 50]
+              - call:
+                  target: LP4
+                  method: mint
+                  args: [P2, amount]
